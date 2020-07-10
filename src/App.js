@@ -37,6 +37,7 @@ class App extends Component {
             result: "",
             lastInput: "",
             operator: "",
+            display: 0,
             hasDecimal: false,
             startingZero: true,
         };
@@ -52,43 +53,52 @@ class App extends Component {
         let newValue = this.state.value;
         let newFormula = this.state.formula;
 
-        // let impliedValue = this.state.value
-
         if (this.state.value === "0") {
             newValue = value;
         }
 
-        if (this.state.value === "0") {
-            newFormula = value;
-        }
+        // if (this.state.value === "0") {
+        //     newFormula = value;
+        // }
 
         if (this.state.value !== "0") {
             newValue = this.state.value + value;
         }
-        if (this.state.formula !== "0") {
-            newFormula = this.state.formula + value;
+        // if (this.state.formula !== "0") {
+        //     newFormula = this.state.formula + value;
+        // }
+
+        if (!this.state.result) {
+            this.setState({
+                // formula: newFormula,
+                value: newValue,
+                result: "",
+                display: newValue,
+                // operator: "",
+            });
         }
-
-        // newValue = this.state.value + value;
-        // newFormula = this.state.formula + value;
-
-        this.setState({
-            formula: newFormula,
-            value: newValue,
-            result: "",
-            operator: "",
-        });
     }
 
     handleOperators(value) {
         /** Prevents duplicate operator signs and only allows operation if value isn't 0 */
-        if (this.state.value > 0) {
+        let initFormula = this.state.formula;
+
+        if (initFormula === "") {
+            initFormula = this.state.value + value;
+        } else if (this.state.result) {
+            initFormula = this.state.formula + value;
+        } else {
+            initFormula = this.state.formula + this.state.value + value;
+        }
+
+        if (this.state.value) {
             this.setState({
-                formula: this.state.formula + ` ${value} `,
+                formula: initFormula,
                 //Replaces number with operator sign for display purposes
                 value: "",
                 result: "",
                 operator: value,
+                display: value,
                 hasDecimal: false,
             });
         }
@@ -101,6 +111,7 @@ class App extends Component {
             result: "",
             hasDecimal: false,
             operator: "",
+            display: 0,
         });
         if (value === "ALL_CLEAR") {
             this.setState({
@@ -110,10 +121,27 @@ class App extends Component {
     }
 
     handleEquals(value) {
-        this.setState({
-            // formula: this.state.formula,
-            result: eval(this.state.formula),
-        });
+        if (this.state.result) {
+            this.setState({
+                formula:
+                    "(" +
+                    this.state.formula +
+                    ")" +
+                    this.state.operator +
+                    this.state.value,
+                result: eval(
+                    this.state.formula + this.state.operator + this.state.value
+                ),
+            });
+        }
+        if (!this.state.result) {
+            this.setState({
+                formula: this.state.formula + this.state.value,
+                // value: "",
+                result: eval(this.state.formula + this.state.value),
+                display: eval(this.state.formula + this.state.value),
+            });
+        }
     }
 
     handleZeros(zero) {
@@ -125,7 +153,7 @@ class App extends Component {
         // let newFormula = this.state.formula;
 
         let impliedZero =
-            this.state.value === "" || this.state.hasDecimal ? zero : "";
+            this.state.value !== "0" || this.state.hasDecimal ? zero : "";
 
         // if (this.state.formula === "") {
         //     // newFormula = zero;
@@ -141,12 +169,15 @@ class App extends Component {
             // newValue = this.state.value + zero;
         }
 
-        this.setState({
-            operator: false,
-            result: "",
-            formula: this.state.formula + impliedZero,
-            value: this.state.value + impliedZero,
-        });
+        if (!this.state.result) {
+            this.setState({
+                operator: false,
+                result: "",
+                // formula: this.state.formula + impliedZero,
+                value: this.state.value + impliedZero,
+                display: this.state.value + impliedZero,
+            });
+        }
 
         //Only works if left down here because "0." counts as 0
         // if (this.state.hasDecimal) {
@@ -167,8 +198,9 @@ class App extends Component {
         //Prevent more than 1 decimals or adding decimal after resulted
         if (!this.state.hasDecimal && !this.state.result) {
             this.setState({
-                formula: this.state.formula + impliedZero + decimal,
+                // formula: this.state.formula + impliedZero + decimal,
                 value: this.state.value + impliedZero + decimal,
+                display: this.state.value + impliedZero + decimal,
                 operator: "",
                 hasDecimal: true,
             });
@@ -187,7 +219,14 @@ class App extends Component {
         const calcWidth = "500";
         const calcHeight = "650";
 
-        const { formula, value, result, lastInput, operator } = this.state;
+        const {
+            formula,
+            value,
+            result,
+            lastInput,
+            operator,
+            display,
+        } = this.state;
         return (
             <StyledApp>
                 {/* {console.log(!isNaN(lastInput))} */}
@@ -205,6 +244,7 @@ class App extends Component {
                         result={result}
                         lastInput={lastInput}
                         operator={operator}
+                        display={display}
                     />
                     <Buttons
                         calcWidth={calcWidth}

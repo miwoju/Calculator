@@ -16,17 +16,17 @@ const StyledDisplay = styled.div`
 `;
 
 const Display = (props) => {
-    const { formula, value, result, lastInput, operator } = props;
+    const { formula, value, result, lastInput, operator, display } = props;
     return (
         <StyledDisplay>
             <h6>
-                {formula ? formula : 0}
-                {result ? ` = ${result}` : null}
+                {display === 0 && value === "" ? 0 : formula}
+                {result ? ` = ${result}` : value ? value : ""}
             </h6>
             {/* {console.log(value, value > 0)} */}
 
             {/* {console.log(lastInput, `is not a number ${isNaN(lastInput)}`)} */}
-            <h5>{result ? result : operator ? operator : value ? value : 0}</h5>
+            <h5>{display}</h5>
         </StyledDisplay>
     );
 };
